@@ -28,6 +28,8 @@ class NevaMeter:
 		self.__DEBUG__ = debug
 
 	def __set_speed__(self, speed):
+		if self.__DEBUG__:
+			print('Setting baudrate to {0} bps...'.format(self.__SPEEDS__[int(speed)]))
 		self.__SERIAL__.write(join_bytes(ACK, b'0', bytes(speed, 'ASCII'), b'1', CRLF))
 		usleep(300000)
 		self.__SERIAL__.baudrate = self.__SPEEDS__[int(speed)]
@@ -60,7 +62,7 @@ class NevaMeter:
 		self.__ADDRESSES__ = importlib.import_module('.meters.{0}'.format(self.model_number), 'neva')
 
 		if self.__DEBUG__:
-			print('Connected to ' + self.manufacturer + ' ' + version.strip())
+			print('Connecting to {0} {1} {2} v{3}...'.format(self.manufacturer, self.model, self.model_number, self.version))
 
 		self.__set_speed__(speed)
 
@@ -89,10 +91,15 @@ class NevaMeter:
 			address = self.addr(address)
 
 		command = appendbcc(join_bytes(SOH, b'R1', STX, address, b'(', bytes(args, 'ASCII') , b')', ETX))
+		if self.__DEBUG__:
+			print('Send:')
+			hexprint(command)
+
 		self.__SERIAL__.write(command)
 		response = self.__SERIAL__.read_until(ETX)
 
 		if self.__DEBUG__:
+			print('Receive:')
 			hexprint(response)
 
 		checkbcc(response, self.__SERIAL__.read(1))
