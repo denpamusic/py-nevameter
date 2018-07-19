@@ -34,7 +34,7 @@ class NevaMeter:
 
 	def __parse_version_str__(self, versionstr):
 		m = re.search(r'(....)((?:MT)?(?:.*))\.(.*)', versionstr)
-		self.model, self.model_number, self_version = m.group(1, 2, 3)
+		self.model, self.model_number, self.version = m.group(1, 2, 3)
 
 	def __sanitize_response__(self, response):
 		sanitized = ''
