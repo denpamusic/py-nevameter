@@ -1,8 +1,10 @@
 import serial
 import re
+import importlib
 from .nevautils import *
 
 class NevaMeter:
+	__ADDRESSES__ = None
 	__SERIAL__ = None
 	__DEBUG__ = False
 	__SPEEDS__ = (300, 600, 1200, 2400, 4800, 9600)
@@ -52,6 +54,8 @@ class NevaMeter:
 		m = re.search(r'/(...)(\d)(.*)', response.decode('ASCII'))
 		self.manufacturer, speed, version = m.group(1, 2, 3)
 		self.__parse_version_str__(version)
+		importlib.import_module('.meters', 'neva')
+		self.__ADDRESSES__ = importlib.import_module('.meters.{0}'.format(self.model_number), 'neva')
 
 		if self.__DEBUG__:
 			print('Connected to ' + self.manufacturer + ' ' + version.strip())
@@ -75,7 +79,13 @@ class NevaMeter:
 	def password(self, pwd):
 		return appendbcc(join_bytes(SOH, b'P1', STX, b'(', bytes(pwd, 'ASCII'), b')', ETX))
 
+	def addr(self, address):
+		return getattr(self.__ADDRESSES__, address)
+
 	def readaddr(self, address, args = ''):
+		if isinstance(address, str):
+			address = self.addr(address)
+
 		command = appendbcc(join_bytes(SOH, b'R1', STX, address, b'(', bytes(args, 'ASCII') , b')', ETX))
 		self.__SERIAL__.write(command)
 		response = self.__SERIAL__.read_until(ETX)
