@@ -14,6 +14,8 @@ class NevaMeter:
 	version = None
 	manufacturer = None
 
+	__SKIP_SANITIZE__ = ('TIME', 'DATE');
+
 	def __init__(self, url, debug = False):
 		self.__SERIAL__ = serial.serial_for_url(
 			url,
@@ -95,6 +97,11 @@ class NevaMeter:
 
 		checkbcc(response, self.__SERIAL__.read(1))
 		m = re.search(address.decode('ASCII') + r'\((.*)\)', response.decode('ASCII'))
+
+		for a in self.__SKIP_SANITIZE__:
+			if (self.addr(a) == address):
+				return m.group(1)
+
 		return self.__sanitize_response__(m.group(1))
 
 	def close(self):
