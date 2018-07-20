@@ -102,8 +102,11 @@ class NevaMeter:
 	def password(self, pwd):
 		return appendbcc(join_bytes(SOH, b'P1', STX, b'(', bytes(pwd, 'ASCII'), b')', ETX))
 
-	def addr(self, address):
-		return getattr(self.__ADDRESSES__, address)
+	def addr(self, name):
+		if hasattr(self.__ADDRESSES__, name):
+			return getattr(self.__ADDRESSES__, name)
+		else:
+			raise RuntimeError('No address named "{}" found'.format(name))
 
 	def readaddr(self, address, args = ''):
 		if isinstance(address, str):
