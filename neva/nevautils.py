@@ -1,9 +1,12 @@
 from time import sleep
+import warnings
 
 SOH = b'\x01'
 STX = b'\x02'
 ETX = b'\x03'
+EOT = b'\x04'
 ACK = b'\x06'
+NAK = b'\x15'
 CRLF = b'\r\n'
 
 def bcc(packet):
@@ -24,10 +27,10 @@ def appendbcc(packet):
 	return packetarr
 
 def checkbcc(packet, packetbcc):
-	packetbcc = int.from_bytes(packetbcc, byteorder='little')
+	packetbcc = int.from_bytes(packetbcc, byteorder = 'little')
 	newbcc = bcc(packet)
 	if (packetbcc != newbcc):
-		print('Warning: checksum mismatch: ' + hex(newbcc) + ' <> ' + hex(packetbcc))
+		warnings.warn('Checksum mismatch: ' + hex(newbcc) + ' <> ' + hex(packetbcc), RuntimeWarning)
 
 def hexprint(buffer):
 	print(buffer.hex()+': '+buffer.decode('ASCII'))

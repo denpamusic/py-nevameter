@@ -1,5 +1,6 @@
 import serial
 import re
+import warnings
 import importlib
 from .nevautils import *
 
@@ -34,6 +35,10 @@ class NevaMeter:
 		usleep(500000)
 		self.__SERIAL__.baudrate = self.__SPEEDS__[int(speed)]
 
+	def __import_addresses__(self):
+		importlib.import_module('.meters', 'neva')
+		self.__ADDRESSES__ = importlib.import_module('.meters.{0}'.format(self.model_number), 'neva')
+
 	def __parse_version_str__(self, versionstr):
 		m = re.search(r'(....)((?:MT)?(?:.*))\.(.*)', versionstr)
 		self.model, self.model_number, self.version = m.group(1, 2, 3)
@@ -58,27 +63,34 @@ class NevaMeter:
 		m = re.search(r'/(...)(\d)(.*)', response.decode('ASCII'))
 		self.manufacturer, speed, version = m.group(1, 2, 3)
 		self.__parse_version_str__(version)
-		importlib.import_module('.meters', 'neva')
-		self.__ADDRESSES__ = importlib.import_module('.meters.{0}'.format(self.model_number), 'neva')
-
+		self.__import_addresses__()
 		if self.__DEBUG__:
 			print('Connecting to {0} {1} {2} v{3}...'.format(self.manufacturer, self.model, self.model_number, self.version))
 
 		self.__set_speed__(speed)
-
 		response=self.__SERIAL__.read_until(ETX)
 		checkbcc(response, self.__SERIAL__.read(1))
 		if self.__DEBUG__:
 			hexprint(response)
 
+		self.auth()
+
+	def auth(self):
+		tries = 0
+
 		while True:
-			self.__SERIAL__.write(self.password('00000000'))
-			response=self.__SERIAL__.read(1)
+			self.__SERIAL__.write(self.password('00000000'));
+			response = self.__SERIAL__.read(1)
 			if self.__DEBUG__:
 				hexprint(response)
+
 			if (response == ACK):
 				break
-			usleep(500000)
+
+			if (tries > 3):
+				raise RuntimeError('Too many authentication attempts')
+			tries += 1
+			usleep(500000 + 100000 * tries)
 
 	def password(self, pwd):
 		return appendbcc(join_bytes(SOH, b'P1', STX, b'(', bytes(pwd, 'ASCII'), b')', ETX))
@@ -104,6 +116,10 @@ class NevaMeter:
 
 		checkbcc(response, self.__SERIAL__.read(1))
 		m = re.search(address.decode('ASCII') + r'\((.*)\)', response.decode('ASCII'))
+
+		if m is None:
+			warnings.warn('Command not supported', RuntimeWarning)
+			return ''
 
 		for a in self.__SKIP_SANITIZE__:
 			if (self.addr(a) == address):
