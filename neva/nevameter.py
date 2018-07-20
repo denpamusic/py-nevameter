@@ -15,7 +15,7 @@ class NevaMeter:
 	version = None
 	manufacturer = None
 
-	__SKIP_SANITIZE__ = ('TIME', 'DATE');
+	__SKIP_SANITIZE__ = ('TIME', 'DATE')
 
 	def __init__(self, url, debug = False):
 		self.__SERIAL__ = serial.serial_for_url(
@@ -86,7 +86,7 @@ class NevaMeter:
 		tries = 0
 
 		while True:
-			self.__SERIAL__.write(self.password('00000000'));
+			self.__SERIAL__.write(self.password('00000000'))
 			response = self.__SERIAL__.read(1)
 			if self.__DEBUG__:
 				hexprint(response)
