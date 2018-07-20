@@ -94,10 +94,10 @@ class NevaMeter:
 			if (response == ACK):
 				break
 
-			if (tries > 3):
+			if (tries >= 3):
 				raise RuntimeError('Too many authentication attempts')
-			tries += 1
 			usleep(500000 + 100000 * tries)
+			tries += 1
 
 	def password(self, pwd):
 		return appendbcc(join_bytes(SOH, b'P1', STX, b'(', bytes(pwd, 'ASCII'), b')', ETX))
