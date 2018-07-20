@@ -31,7 +31,7 @@ class NevaMeter:
 		if self.__DEBUG__:
 			print('Setting baudrate to {0} bps...'.format(self.__SPEEDS__[int(speed)]))
 		self.__SERIAL__.write(join_bytes(ACK, b'0', bytes(speed, 'ASCII'), b'1', CRLF))
-		usleep(300000)
+		usleep(500000)
 		self.__SERIAL__.baudrate = self.__SPEEDS__[int(speed)]
 
 	def __parse_version_str__(self, versionstr):
