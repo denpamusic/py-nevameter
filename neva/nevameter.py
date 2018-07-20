@@ -36,8 +36,15 @@ class NevaMeter:
 		self.__SERIAL__.baudrate = self.__SPEEDS__[int(speed)]
 
 	def __import_addresses__(self):
-		importlib.import_module('.meters', 'neva')
-		self.__ADDRESSES__ = importlib.import_module('.meters.{0}'.format(self.model_number), 'neva')
+		try:
+			importlib.import_module('.meters', 'neva')
+			self.__ADDRESSES__ = importlib.import_module('.meters.{0}'.format(self.model_number), 'neva')
+		except ImportError:
+			warnings.warn(
+				'No addresses found for {0} {1}'.format(self.model, self.model_number),
+				RuntimeWarning
+			)
+			pass
 
 	def __parse_version_str__(self, versionstr):
 		m = re.search(r'(....)((?:MT)?(?:.*))\.(.*)', versionstr)
