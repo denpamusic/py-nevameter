@@ -40,3 +40,6 @@ def usleep(usec):
 
 def join_bytes(*args):
 	return b''.join(args)
+
+def to_number(str):
+	return float(str) if ('.' in str) else int(float(str))
