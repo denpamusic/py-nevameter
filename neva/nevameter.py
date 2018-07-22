@@ -32,7 +32,7 @@ class NevaMeter:
 		if self.__DEBUG__:
 			print('Setting baudrate to {0} bps...'.format(self.__SPEEDS__[int(speed)]))
 		self.__SERIAL__.write(join_bytes(ACK, b'0', bytes(speed, 'ASCII'), b'1', CRLF))
-		usleep(500000)
+		usleep(300000)
 		self.__SERIAL__.baudrate = self.__SPEEDS__[int(speed)]
 
 	def __import_addresses__(self):
@@ -41,7 +41,7 @@ class NevaMeter:
 			self.__ADDRESSES__ = importlib.import_module('.meters.{0}'.format(self.model_number), 'neva')
 		except ImportError:
 			warnings.warn(
-				'No addresses found for {0} {1}'.format(self.model, self.model_number),
+				'No addresses found for {} {}'.format(self.model, self.model_number),
 				RuntimeWarning
 			)
 			pass
@@ -61,7 +61,7 @@ class NevaMeter:
 		self.__parse_version_str__(version)
 		self.__import_addresses__()
 		if self.__DEBUG__:
-			print('Connecting to {0} {1} {2} v{3}...'.format(self.manufacturer, self.model, self.model_number, self.version))
+			print('Connecting to {} {} {} v{}...'.format(self.manufacturer, self.model, self.model_number, self.version))
 
 		self.__set_speed__(speed)
 		response=self.__SERIAL__.read_until(ETX)
