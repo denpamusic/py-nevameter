@@ -51,7 +51,7 @@ class NevaMeter:
 		self.model, self.model_number, self.version = m.group(1, 2, 3)
 
 	def __sanitize_response__(self, response):
-		return list(map((lambda n: to_number(n)), response.split(','))) if (',' in response) else to_number(response)
+		return [to_number(x) for x in response.split(',')] if (',' in response) else to_number(response)
 
 	def connect(self):
 		self.__SERIAL__.write(join_bytes(b'/?!', CRLF))

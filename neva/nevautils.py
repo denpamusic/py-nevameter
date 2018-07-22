@@ -28,7 +28,7 @@ def appendbcc(packet):
 	return packetarr
 
 def checkbcc(packet, packetbcc):
-	packetbcc = struct.unpack('<L', packetbcc)[0]
+	packetbcc = int.from_bytes(packetbcc, 'big')
 	newbcc = bcc(packet)
 	if (packetbcc != newbcc):
 		warnings.warn('Checksum mismatch: {} <> {}'.format(hex(newbcc), hex(packetbcc)), RuntimeWarning)
