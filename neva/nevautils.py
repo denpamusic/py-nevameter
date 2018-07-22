@@ -1,5 +1,6 @@
-from time import sleep
+import struct
 import warnings
+from time import sleep
 
 SOH = b'\x01'
 STX = b'\x02'
@@ -27,13 +28,13 @@ def appendbcc(packet):
 	return packetarr
 
 def checkbcc(packet, packetbcc):
-	packetbcc = int.from_bytes(packetbcc, byteorder = 'little')
+	packetbcc = struct.unpack('<L', packetbcc)[0]
 	newbcc = bcc(packet)
 	if (packetbcc != newbcc):
-		warnings.warn('Checksum mismatch: ' + hex(newbcc) + ' <> ' + hex(packetbcc), RuntimeWarning)
+		warnings.warn('Checksum mismatch: {} <> {}'.format(hex(newbcc), hex(packetbcc)), RuntimeWarning)
 
 def hexprint(buffer):
-	print(buffer.hex()+': '+buffer.decode('ASCII'))
+	print(buffer.hex() + ': ' + buffer.decode('ASCII'))
 
 def usleep(usec):
 	sleep(usec/1000000.0)
