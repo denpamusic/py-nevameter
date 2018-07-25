@@ -30,8 +30,8 @@ class NevaMeter:
 		self.__OPEN__ = True
 		self.__DEBUG__ = debug
 
-    def __enter__(self):
-        return self
+	def __enter__(self):
+		return self
 
 	def __exit__(self, exc_type, exc_value, traceback):
 		self.close()
