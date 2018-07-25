@@ -3,7 +3,7 @@
 import neva
 from datetime import date, timedelta
 
-def month_profile(month):
+def month_profile(address, month):
 	if (month > date.today().month):
 		raise RuntimeError("Couldn't fetch power profile from the future")
 
@@ -25,4 +25,4 @@ def month_profile(month):
 	return [list(reversed(dates)), list(reversed(power))]
 
 # get power profile for July
-dates, readings = month_profile(7)
+dates, readings = month_profile('rfc2217://172.30.1.123:5000', 7)
