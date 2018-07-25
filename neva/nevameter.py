@@ -9,6 +9,7 @@ class NevaMeter:
 	__SERIAL__ = None
 	__DEBUG__ = False
 	__SPEEDS__ = (300, 600, 1200, 2400, 4800, 9600)
+	__OPEN__ = False
 
 	model = None
 	model_number = None
@@ -26,7 +27,14 @@ class NevaMeter:
 			bytesize = serial.SEVENBITS,
 			stopbits = serial.STOPBITS_ONE
 		)
+		self.__OPEN__ = True
 		self.__DEBUG__ = debug
+
+    def __enter__(self):
+        return self
+
+	def __exit__(self, exc_type, exc_value, traceback):
+		self.close()
 
 	def __set_speed__(self, speed):
 		if self.__DEBUG__:
@@ -127,7 +135,9 @@ class NevaMeter:
 		return self.__sanitize_response__(m.group(1))
 
 	def close(self):
-		self.__SERIAL__.write(appendbcc(join_bytes(SOH, b'B0', ETX)))
-		usleep(500000)
-		self.__SERIAL__.flush()
-		self.__SERIAL__.close()
+		if self.__OPEN__:
+			self.__SERIAL__.write(appendbcc(join_bytes(SOH, b'B0', ETX)))
+			usleep(500000)
+			self.__SERIAL__.flush()
+			self.__SERIAL__.close()
+			self.__OPEN__ = False
