@@ -22,14 +22,14 @@ print("""\
 ======== PARAMETERS ========
 Date         : {date}
 Time         : {time}
-Voltage      : {voltage}
-Current      : {current}
-Active Power : {active_power}
+Voltage      : {voltage} V
+Current      : {current} A
+Active Power : {active_power} W
 Power Factor : {power_factor}
-Temperature  : {temperature}
-Frequency    : {frequency}
+Temperature  : {temperature} C
+Frequency    : {frequency} Hz
 ========= READINGS =========
-Day          : {t1}
-Night        : {t2}
-Total        : {total}
+Day          : {t1} KWh
+Night        : {t2} KWh
+Total        : {total} KWh
 """.format(**data))
