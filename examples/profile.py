@@ -15,12 +15,12 @@ def month_profile(month):
 	with neva.connect(address) as n:
 		start = int(n.addr('power_profile_start'), 16)
 		for day in days:
-				current_date = date.today() - timedelta(days=day)
-				if (current_date.month != month):
-					continue
+			current_date = date.today() - timedelta(days=day)
+			if (current_date.month != month):
+				continue
 
-				dates.append(current_date.strftime('%Y-%m-%d'))
-				power.append(n.readaddr(bytes(format(start + day, 'X'), 'ASCII')))
+			dates.append(current_date.strftime('%Y-%m-%d'))
+			power.append(n.readaddr(bytes(format(start + day, 'X'), 'ASCII')))
 
 	return [list(reversed(dates)), list(reversed(power))]
 
