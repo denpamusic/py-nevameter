@@ -1,28 +1,35 @@
 #!/usr/bin/env python3
 
 import neva
-import neva.meters
-from datetime import datetime
 
-n = neva.connect('rfc2217://172.30.1.123:5000', debug = False)
+keys = (
+	'date',
+	'time',
+	'voltage',
+	'current',
+	'active_power',
+	'power_factor',
+	'temperature',
+	'frequency',
+	'readings'
+)
 
-date = n.readaddr('DATE')
-time = n.readaddr('TIME')
-datetime = datetime.strptime(date+time, '%y%m%d%H%M%S')
-total, t1, t2, t3, t4 = n.readaddr('READINGS')
+values = neva.read('rfc2217://172.30.1.123:5000', *keys)
+data = dict(zip(keys, values))
+data['total'], data['t1'], data['t2'], data['t3'], data['t4'] = data['readings']
 
-print('======== PARAMETERS ========')
-print('        Date : {0}'.format(datetime.strftime('%d.%m.%Y')))
-print('        Time : {0}'.format(datetime.strftime('%H:%M:%S')))
-print('     Voltage : {0} V'.format(n.readaddr('VOLTAGE')))
-print('     Current : {0} A'.format(n.readaddr('CURRENT')))
-print('Active Power : {0} W'.format(n.readaddr('ACTIVE_POWER')))
-print('Power Factor : {0}'.format(n.readaddr('POWER_FACTOR')))
-print(' Temperature : {0} C'.format(n.readaddr('TEMPERATURE')))
-print('   Frequency : {0} Hz'.format(n.readaddr('FREQUENCY')))
-print('========= READINGS =========')
-print('         Day : {0} KWh'.format(t1))
-print('       Night : {0} KWh'.format(t2))
-print('       Total : {0} KWh'.format(total))
-
-n.close()
+print("""\
+======== PARAMETERS ========
+Date         : {date}
+Time         : {time}
+Voltage      : {voltage}
+Current      : {current}
+Active Power : {active_power}
+Power Factor : {power_factor}
+Temperature  : {temperature}
+Frequency    : {frequency}
+========= READINGS =========
+Day          : {t1}
+Night        : {t2}
+Total        : {total}
+""".format(**data))
