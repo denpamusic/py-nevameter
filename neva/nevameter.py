@@ -38,7 +38,7 @@ class NevaMeter:
 
 	def __set_speed__(self, speed):
 		if self.__DEBUG__:
-			print('Setting baudrate to {0} bps...'.format(self.__SPEEDS__[int(speed)]))
+			print('Setting baudrate to {} bps...'.format(self.__SPEEDS__[int(speed)]))
 		self.__SERIAL__.write(join_bytes(ACK, b'0', bytes(speed, 'ASCII'), b'1', CRLF))
 		usleep(300000)
 		self.__SERIAL__.baudrate = self.__SPEEDS__[int(speed)]
@@ -46,7 +46,7 @@ class NevaMeter:
 	def __import_addresses__(self):
 		try:
 			importlib.import_module('.meters', 'neva')
-			self.__ADDRESSES__ = importlib.import_module('.meters.{0}'.format(self.model_number), 'neva')
+			self.__ADDRESSES__ = importlib.import_module('.meters.{}'.format(self.model_number), 'neva')
 		except ImportError:
 			warnings.warn(
 				'No addresses found for {} {}'.format(self.model, self.model_number),
@@ -100,8 +100,9 @@ class NevaMeter:
 		return appendbcc(join_bytes(SOH, b'P1', STX, b'(', bytes(pwd, 'ASCII'), b')', ETX))
 
 	def addr(self, name):
-		if hasattr(self.__ADDRESSES__, name):
-			return getattr(self.__ADDRESSES__, name)
+		key = name.upper()
+		if hasattr(self.__ADDRESSES__, key):
+			return getattr(self.__ADDRESSES__, key)
 		else:
 			raise RuntimeError('No address named "{}" found'.format(name))
 
