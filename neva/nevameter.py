@@ -38,7 +38,7 @@ class NevaMeter:
 	def __set_speed__(self, speed):
 		if self.__DEBUG__:
 			print('Setting baudrate to {} bps...'.format(self.__SPEEDS__[int(speed)]))
-		self.__SERIAL__.write(join_bytes(ACK, b'0', bytes(speed, 'ASCII'), b'1', CRLF))
+		self.write(join_bytes(ACK, b'0', bytes(speed, 'ASCII'), b'1', CRLF))
 		usleep(300000)
 		self.__SERIAL__.baudrate = self.__SPEEDS__[int(speed)]
 
@@ -61,8 +61,8 @@ class NevaMeter:
 		return response.split(',') if ',' in response else response
 
 	def connect(self):
-		self.__SERIAL__.write(join_bytes(b'/?!', CRLF))
-		response = self.__SERIAL__.read_until()
+		self.write(join_bytes(b'/?!', CRLF))
+		response = self.read_until()
 		m = re.search(r'/(...)(\d)(.*)', response.decode('ASCII'))
 		self.manufacturer, speed, version = m.group(1, 2, 3)
 		self.__parse_version_str__(version)
@@ -71,8 +71,8 @@ class NevaMeter:
 			print('Connecting to {} {} {} v{}...'.format(self.manufacturer, self.model, self.model_number, self.version))
 
 		self.__set_speed__(speed)
-		response=self.__SERIAL__.read_until(ETX)
-		checkbcc(response, self.__SERIAL__.read(1))
+		response=self.read_until(ETX)
+		checkbcc(response, self.read(1))
 		if self.__DEBUG__:
 			hexprint(response)
 
@@ -82,8 +82,8 @@ class NevaMeter:
 		tries = 0
 
 		while True:
-			self.__SERIAL__.write(self.password('00000000'))
-			response = self.__SERIAL__.read(1)
+			self.write(self.password('00000000'))
+			response = self.read(1)
 			if self.__DEBUG__:
 				hexprint(response)
 
@@ -112,13 +112,13 @@ class NevaMeter:
 			print('Send:')
 			hexprint(command)
 
-		self.__SERIAL__.write(command)
-		response = self.__SERIAL__.read_until(ETX)
+		self.write(command)
+		response = self.read_until(ETX)
 		if self.__DEBUG__:
 			print('Receive:')
 			hexprint(response)
 
-		checkbcc(response, self.__SERIAL__.read(1))
+		checkbcc(response, self.read(1))
 		m = re.search(address.decode('ASCII') + r'\((.*)\)', response.decode('ASCII'))
 		if m is None:
 			warnings.warn('Command not supported', RuntimeWarning)
@@ -127,6 +127,24 @@ class NevaMeter:
 		result = self.__sanitize__(m.group(1))
 		raw = kwarg_get(kwargs, 'raw', ['date', 'time'])
 		return result if isinstance(name, str) and (name in raw) else to_number(result)
+
+	def write(self, bytes):
+		if not self.__OPEN__:
+			raise RuntimeError('Could not write. Connection is not open.')
+
+		return self.__SERIAL__.write(bytes)
+
+	def read_until(self, expect = LF):
+		if not self.__OPEN__:
+			raise RuntimeError('Could not read. Connection is not open.')
+
+		return self.__SERIAL__.read_until(expect)
+
+	def read(self, length):
+		if not self.__OPEN__:
+			raise RuntimeError('Could not read. Connection is not open.')
+
+		return self.__SERIAL__.read(length)
 
 	def close(self):
 		if self.__OPEN__:
