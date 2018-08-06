@@ -22,7 +22,7 @@ class NevaMeter:
 			url,
 			timeout  = kwarg_get(kwargs, 'timeout', 600),
 			baudrate = self.__SPEEDS__[0],
-			parity   = kwarg_get(kwargs, 'parity', serial.PARITY_EVEN),
+			parity   = kwarg_get(kwargs, 'parity',   serial.PARITY_EVEN),
 			bytesize = kwarg_get(kwargs, 'bytesize', serial.SEVENBITS),
 			stopbits = kwarg_get(kwargs, 'stopbits', serial.STOPBITS_ONE)
 		)

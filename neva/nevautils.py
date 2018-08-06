@@ -1,4 +1,3 @@
-import struct
 import warnings
 
 from time import sleep
