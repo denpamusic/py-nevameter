@@ -20,13 +20,13 @@ class NevaMeter:
 	def __init__(self, url, **kwargs):
 		self.__SERIAL__ = serial.serial_for_url(
 			url,
-			timeout=kwarg_get(kwargs, 'timeout', 600),
-			baudrate=self.__SPEEDS__[0],
-			parity = kwarg_get(kwargs, 'parity', serial.PARITY_EVEN),
+			timeout  = kwarg_get(kwargs, 'timeout', 600),
+			baudrate = self.__SPEEDS__[0],
+			parity   = kwarg_get(kwargs, 'parity', serial.PARITY_EVEN),
 			bytesize = kwarg_get(kwargs, 'bytesize', serial.SEVENBITS),
 			stopbits = kwarg_get(kwargs, 'stopbits', serial.STOPBITS_ONE)
 		)
-		self.__OPEN__ = True
+		self.__OPEN__  = True
 		self.__DEBUG__ = kwarg_get(kwargs, 'debug', False)
 
 	def __enter__(self):
