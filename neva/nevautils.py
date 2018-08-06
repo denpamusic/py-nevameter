@@ -1,5 +1,6 @@
 import struct
 import warnings
+
 from time import sleep
 
 SOH = b'\x01'
@@ -43,4 +44,10 @@ def join_bytes(*args):
 	return b''.join(args)
 
 def to_number(str):
-	return float(str) if ('.' in str) else int(float(str))
+	if isinstance(str, (list, tuple)):
+		return [to_number(x) for x in str]
+
+	return float(str) if '.' in str else int(float(str))
+
+def kwarg_get(kwargs, key, default = None):
+	return kwargs[key] if key in kwargs else default

@@ -2,6 +2,7 @@ import serial
 import re
 import warnings
 import importlib
+
 from .nevautils import *
 
 class NevaMeter:
@@ -15,8 +16,6 @@ class NevaMeter:
 	model_number = None
 	version = None
 	manufacturer = None
-
-	__SKIP_SANITIZE__ = ('TIME', 'DATE')
 
 	def __init__(self, url, debug = False):
 		self.__SERIAL__ = serial.serial_for_url(
@@ -58,8 +57,8 @@ class NevaMeter:
 		m = re.search(r'(....)((?:MT)?(?:.*))\.(.*)', versionstr)
 		self.model, self.model_number, self.version = m.group(1, 2, 3)
 
-	def __sanitize_response__(self, response):
-		return [to_number(x) for x in response.split(',')] if (',' in response) else to_number(response)
+	def __sanitize__(self, response):
+		return response.split(',') if ',' in response else response
 
 	def connect(self):
 		self.__SERIAL__.write(join_bytes(b'/?!', CRLF))
@@ -106,34 +105,28 @@ class NevaMeter:
 
 		return getattr(self.__ADDRESSES__, key)
 
-	def readaddr(self, address, args = ''):
-		if isinstance(address, str):
-			address = self.addr(address)
-
-		command = appendbcc(join_bytes(SOH, b'R1', STX, address, b'(', bytes(args, 'ASCII') , b')', ETX))
+	def readaddr(self, name, *args, **kwargs):
+		address = self.resolve(name) if isinstance(name, str) else name
+		command = appendbcc(join_bytes(SOH, b'R1', STX, address, b'(', bytes(','.join(args), 'ASCII') , b')', ETX))
 		if self.__DEBUG__:
 			print('Send:')
 			hexprint(command)
 
 		self.__SERIAL__.write(command)
 		response = self.__SERIAL__.read_until(ETX)
-
 		if self.__DEBUG__:
 			print('Receive:')
 			hexprint(response)
 
 		checkbcc(response, self.__SERIAL__.read(1))
 		m = re.search(address.decode('ASCII') + r'\((.*)\)', response.decode('ASCII'))
-
 		if m is None:
 			warnings.warn('Command not supported', RuntimeWarning)
 			return ''
 
-		for a in self.__SKIP_SANITIZE__:
-			if (self.addr(a) == address):
-				return m.group(1)
-
-		return self.__sanitize_response__(m.group(1))
+		result = self.__sanitize__(m.group(1))
+		raw = kwarg_get(kwargs, 'raw', ['date', 'time'])
+		return result if isinstance(name, str) and (name in raw) else to_number(result)
 
 	def close(self):
 		if self.__OPEN__:

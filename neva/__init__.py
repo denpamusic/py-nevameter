@@ -7,4 +7,4 @@ def connect(url, **kwargs):
 
 def read(url, *args, **kwargs):
 	with connect(url, **kwargs) as n:
-		return [n.readaddr(x) for x in args]
+		return [n.readaddr(x, **kwargs) for x in args]
