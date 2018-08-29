@@ -31,13 +31,13 @@ class Meter:
 	def __enter__(self):
 		return self
 
-	def __exit__(self, exc_type, exc_value, traceback):
+	def __exit__(self, exc_type, exc_value, tracebutil.ACK):
 		self.close()
 
 	def __set_speed__(self, speed):
 		if self.__DEBUG__:
 			print('Setting baudrate to {} bps...'.format(self.__SPEEDS__[int(speed)]))
-		self.write(util.join_bytes(ACK, b'0', bytes(speed, 'ASCII'), b'1', CRLF))
+		self.write(util.join_bytes(util.ACK, b'0', bytes(speed, 'ASCII'), b'1', util.CRLF))
 		util.usleep(300000)
 		self.__SERIAL__.baudrate = self.__SPEEDS__[int(speed)]
 
@@ -60,7 +60,7 @@ class Meter:
 		return response.split(',') if ',' in response else response
 
 	def connect(self):
-		self.write(util.join_bytes(b'/?!', CRLF))
+		self.write(util.join_bytes(b'/?!', util.CRLF))
 		response = self.read_until()
 		m = re.search(r'/(...)(\d)(.*)', response.decode('ASCII'))
 		self.manufacturer, speed, version = m.group(1, 2, 3)
@@ -70,7 +70,7 @@ class Meter:
 			print('Connecting to {} {} {} v{}...'.format(self.manufacturer, self.model, self.model_number, self.version))
 
 		self.__set_speed__(speed)
-		response=self.read_until(ETX)
+		response=self.read_until(util.ETX)
 		util.checkbcc(response, self.read(1))
 		if self.__DEBUG__:
 			util.hexprint(response)
@@ -86,7 +86,7 @@ class Meter:
 			if self.__DEBUG__:
 				util.hexprint(response)
 
-			if (response == ACK):
+			if (response == util.ACK):
 				break
 
 			if (tries >= 3):
@@ -95,7 +95,7 @@ class Meter:
 			tries += 1
 
 	def password(self, pwd):
-		return util.appendbcc(util.join_bytes(SOH, b'P1', STX, b'(', bytes(pwd, 'ASCII'), b')', ETX))
+		return util.appendbcc(util.join_bytes(util.SOH, b'P1', util.STX, b'(', bytes(pwd, 'ASCII'), b')', util.ETX))
 
 	def resolve(self, name):
 		key = name.upper()
@@ -106,13 +106,13 @@ class Meter:
 
 	def readaddr(self, name, *args, **kwargs):
 		address = self.resolve(name) if isinstance(name, str) else name
-		command = util.appendbcc(util.join_bytes(SOH, b'R1', STX, address, b'(', bytes(','.join(args), 'ASCII') , b')', ETX))
+		command = util.appendbcc(util.join_bytes(util.SOH, b'R1', util.STX, address, b'(', bytes(','.join(args), 'ASCII') , b')', util.ETX))
 		if self.__DEBUG__:
 			print('Send:')
 			util.hexprint(command)
 
 		self.write(command)
-		response = self.read_until(ETX)
+		response = self.read_until(util.ETX)
 		if self.__DEBUG__:
 			print('Receive:')
 			util.hexprint(response)
@@ -133,7 +133,7 @@ class Meter:
 
 		return self.__SERIAL__.write(bytes)
 
-	def read_until(self, expect = LF):
+	def read_until(self, expect = util.LF):
 		if not self.__OPEN__:
 			raise RuntimeError('Could not read. Connection is not open.')
 
@@ -147,7 +147,7 @@ class Meter:
 
 	def close(self):
 		if self.__OPEN__:
-			self.__SERIAL__.write(util.appendbcc(util.join_bytes(SOH, b'B0', ETX)))
+			self.__SERIAL__.write(util.appendbcc(util.join_bytes(util.SOH, b'B0', util.ETX)))
 			util.usleep(500000)
 			self.__SERIAL__.flush()
 			self.__SERIAL__.close()
