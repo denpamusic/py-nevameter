@@ -3,15 +3,15 @@
 import neva
 
 keys = (
-	'date',
-	'time',
-	'voltage',
-	'current',
-	'active_power',
-	'power_factor',
-	'temperature',
-	'frequency',
-	'readings'
+    'date',
+    'time',
+    'voltage',
+    'current',
+    'active_power',
+    'power_factor',
+    'temperature',
+    'frequency',
+    'readings'
 )
 
 values = neva.read('rfc2217://172.30.1.123:5000', *keys)
