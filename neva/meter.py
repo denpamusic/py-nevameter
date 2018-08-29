@@ -48,6 +48,11 @@ class Meter:
     def _sanitize(self, response):
         return response.split(',') if ',' in response else response
 
+    def _debug_message(message):
+        ''' Prints message if debug mode is enabled '''
+        if self._debug:
+            util.dump(message)
+
     def connect(self):
         ''' Initializes connection to the meter '''
         self.write(util.join_bytes(b'/?!', ascii.CRLF))
@@ -56,21 +61,15 @@ class Meter:
         self.manufacturer, speed, version_str = m.group(1, 2, 3)
         self.model, self.model_number, self.version = self._parse_version(version_str)
         self._import_addresses(self.model_number)
-        if self._debug:
-            util.dump('Connecting to {} {} {} v{}...'.format(self.manufacturer, self.model, self.model_number, self.version))
-
+        self._debug_message('Connecting to {} {} {} v{}...'.format(self.manufacturer, self.model, self.model_number, self.version))
         self.set_speed(speed)
         response = self.read_until(ascii.ETX, check_bcc = True)
-        if self._debug:
-            util.dump(response)
-
+        self._debug_message(response)
         self.auth()
 
     def set_speed(self, speed):
         ''' Sets serial baudrate and transmits it to meter '''
-        if self._debug:
-            util.dump('Setting baudrate to {} bps...'.format(self.SPEEDS[int(speed)]))
-
+        self._debug_message('Setting baudrate to {} bps...'.format(self.SPEEDS[int(speed)]))
         self.write(util.join_bytes(ascii.ACK, b'0', ascii.atob(speed), b'1', ascii.CRLF))
         util.usleep(300000)
         self._serial.baudrate = self.SPEEDS[int(speed)]
@@ -81,9 +80,7 @@ class Meter:
         while True:
             self.write(self.password('00000000'))
             response = self.read(1)
-            if self._debug:
-                util.dump(response)
-
+            self._debug_message(response)
             if (response == ascii.ACK):
                 break
 
@@ -121,10 +118,8 @@ class Meter:
         address = self.resolve(name) if isinstance(name, str) else name
         self.write(self.command(address, *args))
         response = self.read_until(ascii.ETX, check_bcc = True)
-        if self._debug:
-            util.dump(command)
-            util.dump(response)
-
+        self._debug_message(command)
+        self._debug_message(response)
         m = re.search(ascii.btoa(address) + r'\((.*)\)', ascii.btoa(response))
         if m is None:
             warnings.warn('Command not supported', RuntimeWarning)
