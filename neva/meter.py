@@ -31,7 +31,7 @@ class Meter:
 	def __enter__(self):
 		return self
 
-	def __exit__(self, exc_type, exc_value, tracebutil.ACK):
+	def __exit__(self, exc_type, exc_value, traceback):
 		self.close()
 
 	def __set_speed__(self, speed):
