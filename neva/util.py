@@ -6,8 +6,7 @@ def bcc(packet):
     ''' Calculates Block Check Character '''
     bcc = 0
     packetstr = ascii.btoa(packet)
-    if (packetstr[:1] == ascii.btoa(ascii.SOH) or
-       (packetstr[:1] == ascii.btoa(ascii.STX)):
+    if packetstr[:1] in [ascii.btoa(ascii.SOH), ascii.btoa(ascii.STX)]:
         packetstr = packetstr[1:]
 
     for c in packetstr:
