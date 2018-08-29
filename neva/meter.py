@@ -2,6 +2,7 @@ import re
 import serial
 import warnings
 import importlib
+import neva.bcc as bcc
 import neva.util as util
 import neva.ascii as ascii
 
@@ -94,14 +95,14 @@ class Meter:
 
     def password(self, pwd):
         ''' Constructs authentication packet '''
-        return util.appendbcc(util.join_bytes(
+        return bcc.append(util.join_bytes(
             ascii.SOH, b'P1', ascii.STX,
             b'(', ascii.atob(pwd), b')', ascii.ETX
         ))
 
     def command(self, address, *args):
         ''' Constructs command packet '''
-        return util.appendbcc(util.join_bytes(
+        return bcc.append(util.join_bytes(
             ascii.SOH, b'R1', ascii.STX, address,
             b'(', ascii.atob(','.join(args)) , b')', ascii.ETX
         ))
@@ -154,7 +155,7 @@ class Meter:
 
         response = self._serial.read_until(expect)
         if util.kwarg_get(kwargs, 'check_bcc', False):
-            util.checkbcc(response, self._serial.read(1))
+            bcc.check(response, self._serial.read(1))
 
         return response
 
@@ -162,7 +163,7 @@ class Meter:
         ''' Closes serial connection '''
         if self._open:
             self._serial.write(
-                util.appendbcc(util.join_bytes(ascii.SOH, b'B0', ascii.ETX))
+                bcc.append(util.join_bytes(ascii.SOH, b'B0', ascii.ETX))
             )
             util.usleep(500000)
             self._serial.flush()
