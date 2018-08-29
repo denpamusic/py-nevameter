@@ -48,7 +48,7 @@ class Meter:
     def _sanitize(self, response):
         return response.split(',') if ',' in response else response
 
-    def _debug_message(message):
+    def _debug_message(self, message):
         ''' Prints message if debug mode is enabled '''
         if self._debug:
             util.dump(message)
