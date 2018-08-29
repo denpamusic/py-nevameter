@@ -1,7 +1,7 @@
 import warnings
 
 from time import sleep
-import neva.char as char
+import neva.chars as chars
 
 def bcc(packet):
 	bcc = 0
