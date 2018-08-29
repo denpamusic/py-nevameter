@@ -69,6 +69,7 @@ class Meter:
         ''' Sets serial baudrate and transmits it to meter '''
         if self._debug:
             util.dump('Setting baudrate to {} bps...'.format(self.SPEEDS[int(speed)]))
+
         self.write(util.join_bytes(ascii.ACK, b'0', ascii.atob(speed), b'1', ascii.CRLF))
         util.usleep(300000)
         self._serial.baudrate = self.SPEEDS[int(speed)]
