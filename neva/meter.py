@@ -134,7 +134,7 @@ class Meter:
 
 		return self.__SERIAL__.write(bytes)
 
-	def read_until(self, expect = util.LF):
+	def read_until(self, expect = chars.LF):
 		if not self.__OPEN__:
 			raise RuntimeError('Could not read. Connection is not open.')
 
