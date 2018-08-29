@@ -116,7 +116,8 @@ class Meter:
         ''' Reads data from meter address by byte representation
         or by address alias '''
         address = self.resolve(name) if isinstance(name, str) else name
-        self.write(self.command(address, *args))
+		command = self.command(address, *args)
+        self.write(command)
         response = self.read_until(ascii.ETX, check_bcc = True)
         self._debug_message(command)
         self._debug_message(response)
