@@ -1,11 +1,10 @@
-import serial
 import re
+import serial
 import warnings
 import importlib
+import neva.util as util
 
-from .nevautils import *
-
-class NevaMeter:
+class Meter:
 	__ADDRESSES__ = None
 	__SERIAL__ = None
 	__DEBUG__ = False
@@ -20,14 +19,14 @@ class NevaMeter:
 	def __init__(self, url, **kwargs):
 		self.__SERIAL__ = serial.serial_for_url(
 			url,
-			timeout  = kwarg_get(kwargs, 'timeout', 600),
+			timeout  = util.kwarg_get(kwargs, 'timeout', 600),
 			baudrate = self.__SPEEDS__[0],
-			parity   = kwarg_get(kwargs, 'parity',   serial.PARITY_EVEN),
-			bytesize = kwarg_get(kwargs, 'bytesize', serial.SEVENBITS),
-			stopbits = kwarg_get(kwargs, 'stopbits', serial.STOPBITS_ONE)
+			parity   = util.kwarg_get(kwargs, 'parity',   serial.PARITY_EVEN),
+			bytesize = util.kwarg_get(kwargs, 'bytesize', serial.SEVENBITS),
+			stopbits = util.kwarg_get(kwargs, 'stopbits', serial.STOPBITS_ONE)
 		)
 		self.__OPEN__  = True
-		self.__DEBUG__ = kwarg_get(kwargs, 'debug', False)
+		self.__DEBUG__ = util.kwarg_get(kwargs, 'debug', False)
 
 	def __enter__(self):
 		return self
@@ -38,8 +37,8 @@ class NevaMeter:
 	def __set_speed__(self, speed):
 		if self.__DEBUG__:
 			print('Setting baudrate to {} bps...'.format(self.__SPEEDS__[int(speed)]))
-		self.write(join_bytes(ACK, b'0', bytes(speed, 'ASCII'), b'1', CRLF))
-		usleep(300000)
+		self.write(util.join_bytes(ACK, b'0', bytes(speed, 'ASCII'), b'1', CRLF))
+		util.usleep(300000)
 		self.__SERIAL__.baudrate = self.__SPEEDS__[int(speed)]
 
 	def __import_addresses__(self):
@@ -61,7 +60,7 @@ class NevaMeter:
 		return response.split(',') if ',' in response else response
 
 	def connect(self):
-		self.write(join_bytes(b'/?!', CRLF))
+		self.write(util.join_bytes(b'/?!', CRLF))
 		response = self.read_until()
 		m = re.search(r'/(...)(\d)(.*)', response.decode('ASCII'))
 		self.manufacturer, speed, version = m.group(1, 2, 3)
@@ -72,9 +71,9 @@ class NevaMeter:
 
 		self.__set_speed__(speed)
 		response=self.read_until(ETX)
-		checkbcc(response, self.read(1))
+		util.checkbcc(response, self.read(1))
 		if self.__DEBUG__:
-			hexprint(response)
+			util.hexprint(response)
 
 		self.auth()
 
@@ -85,18 +84,18 @@ class NevaMeter:
 			self.write(self.password('00000000'))
 			response = self.read(1)
 			if self.__DEBUG__:
-				hexprint(response)
+				util.hexprint(response)
 
 			if (response == ACK):
 				break
 
 			if (tries >= 3):
 				raise RuntimeError('Too many authentication attempts')
-			usleep(500000 + 100000 * tries)
+			util.usleep(500000 + 100000 * tries)
 			tries += 1
 
 	def password(self, pwd):
-		return appendbcc(join_bytes(SOH, b'P1', STX, b'(', bytes(pwd, 'ASCII'), b')', ETX))
+		return util.appendbcc(util.join_bytes(SOH, b'P1', STX, b'(', bytes(pwd, 'ASCII'), b')', ETX))
 
 	def resolve(self, name):
 		key = name.upper()
@@ -107,26 +106,26 @@ class NevaMeter:
 
 	def readaddr(self, name, *args, **kwargs):
 		address = self.resolve(name) if isinstance(name, str) else name
-		command = appendbcc(join_bytes(SOH, b'R1', STX, address, b'(', bytes(','.join(args), 'ASCII') , b')', ETX))
+		command = util.appendbcc(util.join_bytes(SOH, b'R1', STX, address, b'(', bytes(','.join(args), 'ASCII') , b')', ETX))
 		if self.__DEBUG__:
 			print('Send:')
-			hexprint(command)
+			util.hexprint(command)
 
 		self.write(command)
 		response = self.read_until(ETX)
 		if self.__DEBUG__:
 			print('Receive:')
-			hexprint(response)
+			util.hexprint(response)
 
-		checkbcc(response, self.read(1))
+		util.checkbcc(response, self.read(1))
 		m = re.search(address.decode('ASCII') + r'\((.*)\)', response.decode('ASCII'))
 		if m is None:
 			warnings.warn('Command not supported', RuntimeWarning)
 			return ''
 
 		result = self.__sanitize__(m.group(1))
-		raw = kwarg_get(kwargs, 'raw', ['date', 'time'])
-		return result if isinstance(name, str) and (name in raw) else to_number(result)
+		raw = util.kwarg_get(kwargs, 'raw', ['date', 'time'])
+		return result if isinstance(name, str) and (name in raw) else util.to_number(result)
 
 	def write(self, bytes):
 		if not self.__OPEN__:
@@ -148,8 +147,8 @@ class NevaMeter:
 
 	def close(self):
 		if self.__OPEN__:
-			self.__SERIAL__.write(appendbcc(join_bytes(SOH, b'B0', ETX)))
-			usleep(500000)
+			self.__SERIAL__.write(util.appendbcc(util.join_bytes(SOH, b'B0', ETX)))
+			util.usleep(500000)
 			self.__SERIAL__.flush()
 			self.__SERIAL__.close()
 			self.__OPEN__ = False

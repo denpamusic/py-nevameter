@@ -1,9 +1,9 @@
-from .nevameter import NevaMeter
+from neva.meter import Meter
 
 def connect(url, **kwargs):
-	nevameter = NevaMeter(url, **kwargs)
-	nevameter.connect()
-	return nevameter
+	meter = Meter(url, **kwargs)
+	meter.connect()
+	return meter
 
 def read(url, *args, **kwargs):
 	with connect(url, **kwargs) as n:
