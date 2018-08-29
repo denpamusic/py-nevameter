@@ -13,7 +13,7 @@ class Meter:
         self._serial = serial.serial_for_url(
             url,
             timeout  = util.kwarg_get(kwargs, 'timeout', 600),
-            baudrate = self.SPEEDS[0],
+            baudrate = util.kwarg_get(kwargs, 'baudrate', self.SPEEDS[0]),
             parity   = util.kwarg_get(kwargs, 'parity',   serial.PARITY_EVEN),
             bytesize = util.kwarg_get(kwargs, 'bytesize', serial.SEVENBITS),
             stopbits = util.kwarg_get(kwargs, 'stopbits', serial.STOPBITS_ONE)
