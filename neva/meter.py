@@ -19,7 +19,6 @@ class Meter:
             bytesize = util.kwarg_get(kwargs, 'bytesize', serial.SEVENBITS),
             stopbits = util.kwarg_get(kwargs, 'stopbits', serial.STOPBITS_ONE)
         )
-        self._open  = True
         self._debug = util.kwarg_get(kwargs, 'debug', False)
 
     def __enter__(self):
@@ -132,22 +131,22 @@ class Meter:
 
     def write(self, bytes):
         ''' Writes bytes to serial port '''
-        if not self._open:
-            raise RuntimeError('Could not write. Connection is not open.')
+        if not self._serial.isOpen():
+            raise RuntimeError('Could not write. Serial is not open.')
 
         return self._serial.write(bytes)
 
     def read(self, length):
         ''' Reads bytes from serial port '''
-        if not self._open:
-            raise RuntimeError('Could not read. Connection is not open.')
+        if not self._serial.isOpen():
+            raise RuntimeError('Could not read. Serial is not open.')
 
         return self._serial.read(length)
 
     def read_until(self, expect = ascii.LF, **kwargs):
         ''' Reads from serial port until character '''
-        if not self._open:
-            raise RuntimeError('Could not read. Connection is not open.')
+        if not self._serial.isOpen():
+            raise RuntimeError('Could not read. Serial is not open.')
 
         response = self._serial.read_until(expect)
         if util.kwarg_get(kwargs, 'check_bcc', False):
@@ -157,11 +156,9 @@ class Meter:
 
     def close(self):
         ''' Closes serial connection '''
-        if self._open:
+        if self._serial.isOpen():
             self._serial.write(
                 bcc.append(util.join_bytes(ascii.SOH, b'B0', ascii.ETX))
-            )
             util.usleep(500000)
             self._serial.flush()
             self._serial.close()
-            self._open = False
