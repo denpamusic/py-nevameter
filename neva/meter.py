@@ -159,6 +159,7 @@ class Meter:
         if self._serial.isOpen():
             self._serial.write(
                 bcc.append(util.join_bytes(ascii.SOH, b'B0', ascii.ETX))
+            )
             util.usleep(500000)
             self._serial.flush()
             self._serial.close()
