@@ -5,7 +5,7 @@ EOT = b'\x04'
 ACK = b'\x06'
 NAK = b'\x15'
 LF = b'\n'
-CRLF = b'\r\n'
+CR = b'\r'
 
 def atob(ascii):
     ''' Converts ascii to bytes '''

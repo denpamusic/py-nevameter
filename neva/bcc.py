@@ -1,5 +1,5 @@
 import warnings
-import neva.ascii as ascii
+from . import ascii
 
 def bcc(packet):
     ''' Calculates Block Check Character '''
@@ -19,12 +19,8 @@ def append(packet):
     packetarr.append(bcc(packet))
     return packetarr
 
-def check(packet, packetbcc):
+def valid(packet, packetbcc):
     ''' Checks Block Check Character of the packet '''
     packetbcc = int.from_bytes(packetbcc, 'big')
     newbcc = bcc(packet)
-    if (packetbcc != newbcc):
-        warnings.warn(
-            'Checksum mismatch: {} <> {}'.format(hex(newbcc), hex(packetbcc)),
-            RuntimeWarning
-        )
+    return packetbcc == newbcc

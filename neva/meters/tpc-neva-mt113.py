@@ -1,0 +1,16 @@
+time = '000901FF'
+date = '000902FF'
+temperature = '600900FF'
+voltage = '0C0700FF'
+current = '0B0700FF'
+active_power = '100700FF'
+power_factor = '0D07FFFF'
+frequency = '0E0701FF'
+readings = '0F0880FF'
+serial = '600100FF'
+software_version = '600104FF'
+power_profile = ['63010000', '6301007F']
+monthly_archive = ['0F088000', '0F08800B']
+events_power = ['63610101', '63610102']
+events_set_time = ['63620201', '63620202']
+events_change_parameters = ['63620101', '63620101']

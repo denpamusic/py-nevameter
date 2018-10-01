@@ -9,4 +9,4 @@ def connect(url, **kwargs):
 def read(url, *args, **kwargs):
     ''' Reads data from list of addresses or address aliases '''
     with connect(url, **kwargs) as n:
-        return [n.readaddr(x, **kwargs) for x in args]
+        return [n.read(x, **kwargs) for x in args]

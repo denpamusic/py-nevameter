@@ -1,15 +1,18 @@
+import importlib
+from . import ascii
 from time import sleep
-import neva.ascii as ascii
 
-def dump(data):
+def split_str(str, length = 2):
+    ''' Splits string into pieces of certain length '''
+    return [str[i:i+length] for i in range(0, len(str), length)]
+
+def hexify(data):
     ''' Dumps string or hex representation of data '''
-    print(data if isinstance(data, str) else data.hex() + ': ' + ascii.btoa(data))
+    return ' '.join(split_str(data.hex())) + ': ' + ascii.btoa(data)
 
 def usleep(usec):
+    ''' Sleeps for microseconds '''
     sleep(usec / 1000000.0)
-
-def join_bytes(*args):
-    return b''.join(args)
 
 def to_number(str):
     ''' Converts string or list|tuple of strings to number '''
@@ -18,6 +21,10 @@ def to_number(str):
 
     return float(str) if '.' in str else int(float(str))
 
-def kwarg_get(kwargs, key, default = None):
-    ''' Gets kwarg by name '''
-    return kwargs[key] if key in kwargs else default
+def load_module(module):
+    ''' Loads module by path '''
+    parts = module.split('.')
+    for length in range(1, len(parts)):
+        importlib.import_module('.'.join(parts[:length]))
+
+    return importlib.import_module(module)
