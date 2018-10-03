@@ -22,5 +22,4 @@ def append(packet):
 def valid(packet, packetbcc):
     ''' Checks Block Check Character of the packet '''
     packetbcc = int.from_bytes(packetbcc, 'big')
-    newbcc = bcc(packet)
-    return packetbcc == newbcc
+    return bcc(packet) == packetbcc
