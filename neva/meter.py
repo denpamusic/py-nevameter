@@ -27,7 +27,7 @@ class Meter:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.close()
+        self.connection.close()
 
     def _parse_range(self, addresses):
         ''' Parses list to address range '''
