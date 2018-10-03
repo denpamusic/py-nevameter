@@ -1,27 +1,25 @@
-from . import util, ascii
-
-from neva.connection import Connection
-
 import re
 import serial
+import logging
 import warnings
 
-class Meter:
-    speeds = (300, 600, 1200, 2400, 4800, 9600)
+from . import util, ascii
+from neva.connection import Connection
 
-    def __init__(self, url, debug = False, **kwargs):
+class Meter:
+    def __init__(self, url, **kwargs):
         ''' Creates meter instance and initializes connection '''
         _serial = serial.serial_for_url(
             url,
             timeout  = kwargs.get('timeout', 600),
-            baudrate = kwargs.get('baudrate', self.speeds[0]),
+            baudrate = kwargs.get('baudrate', 300),
             parity   = kwargs.get('parity', serial.PARITY_EVEN),
             bytesize = kwargs.get('bytesize', serial.SEVENBITS),
             stopbits = kwargs.get('stopbits', serial.STOPBITS_ONE),
             **kwargs
         )
-        self.connection = Connection(_serial, debug = debug)
-        self._debug = debug
+        self.connection = Connection(_serial)
+        self._logger = logging.getLogger(__name__)
 
     def __enter__(self):
         return self
@@ -48,8 +46,9 @@ class Meter:
         try:
             module = '%s-%s-%s' % (self.vendor, self.model, self.model_number)
             self._addresses = util.load_module('neva.meters.' + module.lower())
+            self._logger.info('Loaded addresses from [%s.py]', module.lower())
         except ImportError:
-            warnings.warn('Unknown meter [%s].' % module, RuntimeWarning)
+            warnings.warn('Unknown meter [%s]' % module, RuntimeWarning)
 
     def resolve(self, name):
         ''' Resolves address alias to byte representation '''
@@ -58,7 +57,7 @@ class Meter:
 
         key = name.lower()
         if not hasattr(self._addresses, key):
-            raise RuntimeError('Address not found [%s].' % name)
+            raise LookupError('Address not found [%s]' % name)
 
         return getattr(self._addresses, key)
 
@@ -68,12 +67,10 @@ class Meter:
         connection.write('/?![CR][LF]')
         self._parse_version(connection.read(until = ascii.LF, check_bcc = False))
         self._load_addresses()
-        connection.write('[ACK]0%s1[CR][LF]' % self.speed)
-        connection.setBaudrate(self.speeds[int(self.speed)])
-        connection.read()
+        connection.negotiateSpeed(self.speed)
         connection.write('[SOH]P1[STX](00000000)[ETX][BCC]')
         if not connection.read(until = ascii.ACK):
-            raise RuntimeError('Invalid password.')
+            raise RuntimeError('Invalid password')
 
     def read(self, name, *args, **kwargs):
         '''\

@@ -1,3 +1,5 @@
+import logging
+
 from neva.meter import Meter
 
 def connect(url, **kwargs):
@@ -12,3 +14,5 @@ def read(url, *args, **kwargs):
         response = [n.read(x, **kwargs) for x in args]
         n.close()
         return response
+
+logging.getLogger(__name__).addHandler(logging.NullHandler())
